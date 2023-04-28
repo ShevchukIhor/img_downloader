@@ -8,41 +8,28 @@ url_base = gets.chomp
 
 puts "Enter the image name from url, example 'p000.jpg':"
 image_name = gets.chomp
-
-puts "Enter the range of images example '000..187':"
-range_str = gets.chomp
-range_start, range_end = range_str.split('..').map(&:to_i)
-
-# check if the first file exists
-first_file = "#{url_base}#{image_name.gsub(/\d/, range_start.to_s)}"
-response = Net::HTTP.get_response(URI(first_file))
-if response.code != '200'
-  puts "Error: the first file in the range was not found: #{first_file}"
-  exit
-end
-# in progress
-=begin
-last_valid_range_end = nil
-while range_end >= range_start
-  last_file = "#{url_base}#{image_name.gsub(/\d/, range_end.to_s)}"
-  response = Net::HTTP.get_response(URI(last_file))
-  if response.code == '200'
-    last_valid_range_end = range_end
-    break
+loop do
+  puts "Enter the range of images, first image number, example '000':"
+  range_start = gets.chomp
+  first_file = "#{url_base}#{image_name.gsub(/\d+/, range_start.to_s)}"
+  response = Net::HTTP.get_response(URI(first_file))
+  if response.code != '200'
+    puts "Error: the first file in the range was not found: #{first_file}"
   end
-  range_end -= 1
+  @range_start = range_start
+  puts "Enter the range of images, last image number, example '187':"
+  range_end = gets.chomp
+  last_file = "#{url_base}#{image_name.gsub(/\d+/, range_end.to_s)}"
+  response = Net::HTTP.get_response(URI(last_file))
+  if response.code != '200'
+    puts "Error: the last file in the range was not found: #{last_file}"
+  end
+  @range_end = range_end
+
+  break if response.code == '200'
 end
 
-if last_valid_range_end.nil?
-  puts "Error: no valid range found"
-  exit
-end
-
-range = range_start..last_valid_range_end
-=end
-###
-
-range = range_start..range_end
+range = @range_start..@range_end
 
 range.each do |num|
   image_name = "p#{num}.jpg"
